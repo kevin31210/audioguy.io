@@ -3,192 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>演唱會配線大挑戰 - 2025 傷心欲絕 Edition</title>
+    <title>傷心欲絕 2025 - 音響配線挑戰賽</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background-color: #0f172a;
-            color: #f1f5f9;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            font-family: system-ui, -apple-system, sans-serif;
             margin: 0;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-        }
-        #game-container {
-            position: relative;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            border: 2px solid #334155;
-            border-radius: 16px;
-            background: #000;
             overflow: hidden;
         }
-        canvas {
-            display: block;
-            background-image: 
-                radial-gradient(#1e293b 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-        .ui-header {
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(8px);
-            padding: 12px 24px;
+        #game-box {
+            position: relative;
+            border: 4px solid #1e293b;
             border-radius: 12px;
-            margin-bottom: 12px;
+            background: #000;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8);
+            width: 600px;
+            height: 400px;
+        }
+        canvas { display: block; border-radius: 8px; }
+        .hud {
             width: 100%;
             max-width: 600px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            border: 1px solid #475569;
+            align-items: flex-end;
+            margin-bottom: 10px;
+            padding: 0 10px;
         }
-        #target-badge {
-            background: #06b6d4;
+        .target-box {
+            background: #0ea5e9;
             color: #000;
-            padding: 4px 12px;
-            border-radius: 20px;
+            padding: 5px 15px;
+            border-radius: 6px;
             font-weight: 800;
-            font-size: 0.9rem;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(6, 182, 212, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+            font-style: italic;
         }
         #game-over {
             position: absolute;
             inset: 0;
-            background: rgba(0, 0, 0, 0.96);
+            background: rgba(0,0,0,0.96);
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 100;
-            text-align: center;
-        }
-        .boss-img-frame {
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            border: 8px solid #ef4444;
-            object-fit: cover;
-            margin-bottom: 16px;
-            box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
-            background-color: #1e293b;
-        }
-        .mistake-banner {
-            background: #ef4444;
-            color: white;
-            font-size: 2.2rem;
-            font-weight: 900;
-            padding: 8px 40px;
-            transform: rotate(-2deg);
-            margin-bottom: 20px;
-            box-shadow: 5px 5px 0 #7f1d1d;
-        }
-        .btn-action {
-            background: #f1f5f9;
-            color: #0f172a;
-            padding: 10px 32px;
             border-radius: 8px;
-            font-weight: 700;
-            transition: all 0.2s;
-            border: none;
+            padding: 20px;
         }
-        .btn-action:hover {
-            background: #cbd5e1;
+        /* 修正頭像容器與圖片樣式 */
+        .boss-container {
+            width: 180px;
+            height: 180px;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+        .boss-frame {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 6px solid #ef4444;
+            /* 關鍵：確保圖片比例正確且不超出圓框 */
+            object-fit: cover; 
+            object-position: center;
+            background: #1e293b;
+            display: block;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
+        }
+        .mistake-tag {
+            background: #ef4444;
+            color: #fff;
+            font-size: 1.8rem;
+            font-weight: 900;
+            padding: 4px 24px;
+            transform: rotate(-2deg);
+            margin-bottom: 15px;
+            white-space: nowrap;
+            box-shadow: 4px 4px 0 #7f1d1d;
+        }
+        .retry-btn {
+            background: #fff;
+            color: #000;
+            padding: 8px 30px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .retry-btn:hover { 
+            background: #cbd5e1; 
             transform: scale(1.05);
         }
-        #upload-trigger {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            opacity: 0.5;
-            transition: opacity 0.3s;
-        }
-        #upload-trigger:hover { opacity: 1; }
     </style>
 </head>
 <body>
 
-    <div class="ui-header">
-        <div class="flex flex-col">
-            <span class="text-xs text-cyan-400 uppercase tracking-widest font-bold">Current Patching</span>
-            <div id="target-display" class="text-xl font-bold italic">Loading...</div>
+    <div class="hud">
+        <div>
+            <div class="text-xs text-slate-500 uppercase font-bold tracking-widest">Current Target</div>
+            <div id="target-name" class="text-xl font-black text-cyan-400">OH L</div>
         </div>
-        <div class="text-right">
-            <span id="target-badge">GOAL: CH 1</span>
-        </div>
+        <div id="target-ch" class="target-box">CH 1</div>
     </div>
 
-    <div id="game-container">
+    <div id="game-box">
         <canvas id="gameCanvas" width="600" height="400"></canvas>
-        
         <div id="game-over">
-            <img id="boss-display" class="boss-img-frame" src="" alt="Boss">
-            <div id="no-photo-msg" class="text-red-500 mb-4 text-sm font-bold hidden">尚未上傳主管照片</div>
-            <div class="mistake-banner">YOU ARE A MISTAKE</div>
-            <div id="error-reason" class="mb-8 text-slate-400 max-w-sm"></div>
-            <button class="btn-action" onclick="resetGame()">RETRY PATCHING</button>
+            <div class="boss-container">
+                <img id="boss-pic" class="boss-frame" src="" alt="">
+                <div id="no-pic" class="w-full h-full rounded-full border-4 border-dashed border-slate-700 flex items-center justify-center text-slate-600 text-xs text-center p-4">
+                    尚未設定<br>主管照片
+                </div>
+            </div>
+            <div class="mistake-tag">YOU ARE A MISTAKE</div>
+            <div id="reason" class="text-slate-400 text-sm mb-6 px-10 text-center italic"></div>
+            <button class="retry-btn" onclick="reset()">RETRY PATCHING</button>
         </div>
     </div>
 
-    <div id="upload-trigger">
-        <button onclick="document.getElementById('file-input').click()" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded border border-slate-600">
-            📁 設定主管頭像
+    <input type="file" id="upload" accept="image/*" class="hidden" onchange="savePic(event)">
+    <div class="mt-8 text-slate-600 text-xs flex items-center gap-6">
+        <button onclick="document.getElementById('upload').click()" class="flex items-center gap-2 hover:text-slate-300 transition-colors">
+            <span class="text-base">📁</span> 設定主管照片 (支援各種比例)
         </button>
-        <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
-    </div>
-
-    <div class="mt-8 text-slate-500 text-xs flex items-center gap-6">
-        <div class="flex items-center gap-2">
-            <kbd class="bg-slate-800 px-2 py-1 rounded border border-slate-600 text-slate-300">WASD</kbd> 操控線路
-        </div>
-        <span>•</span>
-        <div>請依照 Channel List 順序配線</div>
+        <span class="opacity-30">|</span>
+        <span>[WASD / 方向鍵] 控制線路</span>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const targetDisplay = document.getElementById('target-display');
-        const targetBadge = document.getElementById('target-badge');
-        const gameOverEl = document.getElementById('game-over');
-        const errorReasonEl = document.getElementById('error-reason');
-        const bossDisplay = document.getElementById('boss-display');
-        const noPhotoMsg = document.getElementById('no-photo-msg');
-
-        // 圖片處理邏輯
-        function handleImageUpload(e) {
+        const bossPic = document.getElementById('boss-pic');
+        const noPic = document.getElementById('no-pic');
+        
+        function savePic(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (event) => {
-                    const data = event.target.result;
-                    localStorage.setItem('boss_img_base64', data);
-                    updateBossImage();
+                reader.onload = (ev) => {
+                    localStorage.setItem('boss', ev.target.result);
+                    loadPic();
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        function updateBossImage() {
-            const savedImg = localStorage.getItem('boss_img_base64');
-            if (savedImg) {
-                bossDisplay.src = savedImg;
-                bossDisplay.classList.remove('hidden');
-                noPhotoMsg.classList.add('hidden');
+        function loadPic() {
+            const data = localStorage.getItem('boss');
+            if (data) {
+                bossPic.src = data;
+                bossPic.style.display = 'block';
+                noPic.style.display = 'none';
             } else {
-                bossDisplay.classList.add('hidden');
-                noPhotoMsg.classList.remove('hidden');
+                bossPic.style.display = 'none';
+                noPic.style.display = 'flex';
             }
         }
 
-        // 根據附件 2. Channel List 整理的正確順序
         const channelList = [
             { id: 1, name: "OH L" }, { id: 2, name: "OH R" }, { id: 3, name: "Ride" },
             { id: 4, name: "Floor Tom" }, { id: 5, name: "Rack Tom" }, { id: 6, name: "Hi-Hat" },
@@ -198,153 +176,119 @@
             { id: 22, name: "Vocal (馬摳)" }, { id: 23, name: "Vocal (阿祖)" }, { id: 24, name: "Vocal (冠甫)" }
         ];
 
-        const gridSize = 20;
-        const tileCountX = canvas.width / gridSize;
-        const tileCountY = canvas.height / gridSize;
+        let snake = [], dx = 1, dy = 0, targetIdx = 0, food = {}, decoys = [], loop, changingDir = false;
 
-        let snake = [];
-        let dx = 1, dy = 0;
-        let food = {}, decoys = [];
-        let score = 0, targetIdx = 0;
-        let gameInterval, changingDir = false;
-
-        function resetGame() {
-            snake = [
-                { x: 5, y: 10, label: "Patch" },
-                { x: 4, y: 10, label: "Cable" },
-                { x: 3, y: 10, label: "Cable" }
-            ];
-            dx = 1; dy = 0; score = 0; targetIdx = 0;
-            gameOverEl.style.display = 'none';
-            spawnItems();
+        function reset() {
+            snake = [{x:10, y:10, label:"Patch"}];
+            dx = 1; dy = 0; targetIdx = 0;
+            document.getElementById('game-over').style.display = 'none';
+            spawn();
             updateUI();
-            if (gameInterval) clearInterval(gameInterval);
-            gameInterval = setInterval(mainLoop, 110);
-            updateBossImage();
+            if (loop) clearInterval(loop);
+            loop = setInterval(step, 110);
+            loadPic();
         }
 
-        function updateUI() {
-            const current = channelList[targetIdx];
-            targetDisplay.innerText = current.name;
-            targetBadge.innerText = `GOAL: CH ${current.id}`;
-        }
-
-        function spawnItems() {
-            const target = channelList[targetIdx];
-            // 正確目標
-            food = {
-                x: Math.floor(Math.random() * (tileCountX - 2)) + 1,
-                y: Math.floor(Math.random() * (tileCountY - 2)) + 1,
-                id: target.id, name: target.name
-            };
-
-            // 干擾物 (隨機抓兩個非目前目標的 ID)
+        function spawn() {
+            const t = channelList[targetIdx];
+            // 避免生成在邊界
+            food = { x: rand(28)+1, y: rand(18)+1, id: t.id, name: t.name };
             decoys = [];
             while(decoys.length < 3) {
-                let r = channelList[Math.floor(Math.random() * channelList.length)];
-                if (r.id !== target.id) {
-                    decoys.push({
-                        x: Math.floor(Math.random() * (tileCountX - 2)) + 1,
-                        y: Math.floor(Math.random() * (tileCountY - 2)) + 1,
-                        id: r.id, name: r.name
-                    });
-                }
+                let r = channelList[Math.floor(Math.random()*channelList.length)];
+                if(r.id !== t.id) decoys.push({ x: rand(28)+1, y: rand(18)+1, id: r.id, name: r.name });
             }
         }
 
-        function mainLoop() {
+        function rand(max) { return Math.floor(Math.random() * max); }
+
+        function updateUI() {
+            const t = channelList[targetIdx];
+            document.getElementById('target-name').innerText = t.name;
+            document.getElementById('target-ch').innerText = `CH ${t.id}`;
+        }
+
+        function step() {
             changingDir = false;
             const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            
+            if (head.x<0 || head.x>=30 || head.y<0 || head.y>=20) return fail("導線拉出舞台了！主管看著你。");
+            if (snake.some(p => p.x === head.x && p.y === head.y)) return fail("線材打結了！這是在纏毛線嗎？");
 
-            // 死亡判定
-            if (head.x < 0 || head.x >= tileCountX || head.y < 0 || head.y >= tileCountY) {
-                return endGame("Out of Bounds! 舞台就這麼大，你把線拉到哪去了？");
-            }
-            if (snake.some(p => p.x === head.x && p.y === head.y)) {
-                return endGame("Cable Mess! 線全部打結了，這是在纏毛線嗎？");
-            }
-
-            // 吃到東西判定
             if (head.x === food.x && head.y === food.y) {
                 head.label = food.name;
                 snake.unshift(head);
                 targetIdx = (targetIdx + 1) % channelList.length;
-                spawnItems();
-                updateUI();
+                spawn(); updateUI();
             } else {
-                let hitDecoy = decoys.find(d => d.x === head.x && d.y === head.y);
-                if (hitDecoy) {
-                    return endGame(`Wrong Patch! 主管要的是 CH ${food.id}，你卻接到了 CH ${hitDecoy.id} (${hitDecoy.name})`);
-                }
-                
+                let d = decoys.find(i => i.x === head.x && i.y === head.y);
+                if (d) return fail(`配錯線！主管要的是 CH ${food.id}，你接成了 CH ${d.id} (${d.name})`);
                 head.label = snake[0].label;
                 snake.unshift(head);
                 snake.pop();
             }
-
-            render();
+            draw();
         }
 
-        function render() {
-            ctx.fillStyle = "#000";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function draw() {
+            ctx.fillStyle = '#000'; ctx.fillRect(0,0,600,400);
+            
+            // 畫格線底圖
+            ctx.strokeStyle = '#111';
+            ctx.lineWidth = 1;
+            for(let i=0; i<30; i++) { ctx.beginPath(); ctx.moveTo(i*20,0); ctx.lineTo(i*20,400); ctx.stroke(); }
+            for(let i=0; i<20; i++) { ctx.beginPath(); ctx.moveTo(0,i*20); ctx.lineTo(600,i*20); ctx.stroke(); }
 
-            // 畫物體
-            drawCircle(food, "#06b6d4", true);
-            decoys.forEach(d => drawCircle(d, "#f59e0b", false));
-
-            // 畫蛇
-            snake.forEach((part, i) => {
+            drawItem(food, '#0ea5e9', true);
+            decoys.forEach(d => drawItem(d, '#f59e0b', false));
+            
+            snake.forEach((p, i) => {
                 const isHead = i === 0;
-                ctx.fillStyle = isHead ? "#f8fafc" : "#334155";
+                ctx.fillStyle = isHead ? '#fff' : '#334155';
                 
-                ctx.beginPath();
+                // 圓角矩形
                 const r = isHead ? 6 : 4;
-                ctx.roundRect(part.x * gridSize + 1, part.y * gridSize + 1, gridSize - 2, gridSize - 2, r);
+                ctx.beginPath();
+                ctx.roundRect(p.x*20+1, p.y*20+1, 18, 18, r);
                 ctx.fill();
 
-                if (!isHead && i % 3 === 1) {
-                    ctx.fillStyle = "#94a3b8";
-                    ctx.font = "bold 8px sans-serif";
-                    ctx.textAlign = "center";
-                    ctx.fillText(part.label.substring(0, 4), part.x * gridSize + gridSize/2, part.y * gridSize + gridSize/2 + 3);
+                if(i>0 && i%2===0) {
+                    ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 8px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(p.label.slice(0,4), p.x*20+10, p.y*20+12);
                 }
             });
         }
 
-        function drawCircle(node, color, isTarget) {
-            if (isTarget) {
+        function drawItem(n, c, isTarget) {
+            if(isTarget) {
                 ctx.shadowBlur = 15;
-                ctx.shadowColor = color;
+                ctx.shadowColor = c;
             }
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.arc(node.x * gridSize + gridSize/2, node.y * gridSize + gridSize/2, gridSize/2 - 2, 0, Math.PI * 2);
-            ctx.fill();
-            
+            ctx.fillStyle = c;
+            ctx.beginPath(); ctx.arc(n.x*20+10, n.y*20+10, 8, 0, 7); ctx.fill();
             ctx.shadowBlur = 0;
-            ctx.fillStyle = "black";
-            ctx.font = "bold 10px sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText(node.id, node.x * gridSize + gridSize/2, node.y * gridSize + gridSize/2 + 4);
+            
+            ctx.fillStyle = '#000'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText(n.id, n.x*20+10, n.y*20+14);
         }
 
-        function endGame(reason) {
-            clearInterval(gameInterval);
-            errorReasonEl.innerText = reason;
-            gameOverEl.style.display = 'flex';
+        function fail(r) {
+            clearInterval(loop);
+            document.getElementById('reason').innerText = r;
+            document.getElementById('game-over').style.display = 'flex';
         }
 
-        window.addEventListener('keydown', e => {
-            if (changingDir) return;
-            const key = e.key.toLowerCase();
-            if ((key === 'w' || key === 'arrowup') && dy === 0) { dx = 0; dy = -1; changingDir = true; }
-            if ((key === 's' || key === 'arrowdown') && dy === 0) { dx = 0; dy = 1; changingDir = true; }
-            if ((key === 'a' || key === 'arrowleft') && dx === 0) { dx = -1; dy = 0; changingDirection = true; }
-            if ((key === 'd' || key === 'arrowright') && dx === 0) { dx = 1; dy = 0; changingDirection = true; }
-        });
+        window.onkeydown = e => {
+            if(changingDir) return;
+            const k = e.key.toLowerCase();
+            if ((k==='w'||k==='arrowup') && dy===0) {dx=0; dy=-1; changingDir=true;}
+            if ((k==='s'||k==='arrowdown') && dy===0) {dx=0; dy=1; changingDir=true;}
+            if ((k==='a'||k==='arrowleft') && dx===0) {dx=-1; dy=0; changingDir=true;}
+            if ((k==='d'||k==='arrowright') && dx===0) {dx=1; dy=0; changingDir=true;}
+        };
 
-        window.onload = resetGame;
+        window.onload = reset;
     </script>
 </body>
 </html>
